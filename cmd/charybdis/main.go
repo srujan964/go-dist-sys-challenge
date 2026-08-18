@@ -20,8 +20,19 @@ import (
 
 func main() {
 	n := maelstrom.NewNode()
+	idGenerator := handler.NewGenerator()
+
 	n.Handle("echo", func(msg maelstrom.Message) error {
 		resp, err := handler.HandleEcho(msg)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		return n.Reply(msg, resp)
+	})
+
+	n.Handle("generate", func(msg maelstrom.Message) error {
+		resp, err := idGenerator.Generate(msg)
 		if err != nil {
 			log.Fatal(err)
 		}
