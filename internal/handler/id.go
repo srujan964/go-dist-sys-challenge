@@ -6,7 +6,6 @@ import (
 	"log"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	maelstrom "github.com/jepsen-io/maelstrom/demo/go"
@@ -24,13 +23,11 @@ type IdGenerateReply struct {
 }
 
 type Generator struct {
-	mu  *sync.Mutex
 	seq uint64
 }
 
 func NewGenerator() *Generator {
 	return &Generator{
-		mu:  &sync.Mutex{},
 		seq: 0,
 	}
 }
@@ -72,8 +69,6 @@ func (g *Generator) Generate(msg maelstrom.Message) (IdGenerateReply, error) {
 // 6 bit node ID -- assumes no more than 64 nodes
 // 16 bit node local sequence -- assumes no more than 65536 requests to a node per millisecond
 func (g *Generator) nextId(node string) (string, error) {
-	g.mu.Lock()
-	defer g.mu.Unlock()
 	g.seq++
 
 	var id uint64
