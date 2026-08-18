@@ -22,6 +22,8 @@ func main() {
 	n := maelstrom.NewNode()
 	idGenerator := handler.NewGenerator()
 
+	state := handler.NewState()
+
 	n.Handle("echo", func(msg maelstrom.Message) error {
 		resp, err := handler.HandleEcho(msg)
 		if err != nil {
@@ -33,6 +35,33 @@ func main() {
 
 	n.Handle("generate", func(msg maelstrom.Message) error {
 		resp, err := idGenerator.Generate(msg)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		return n.Reply(msg, resp)
+	})
+
+	n.Handle("broadcast", func(msg maelstrom.Message) error {
+		resp, err := state.Store(msg, n)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		return n.Reply(msg, resp)
+	})
+
+	n.Handle("read", func(msg maelstrom.Message) error {
+		resp, err := state.CurrentMessages()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		return n.Reply(msg, resp)
+	})
+
+	n.Handle("topology", func(msg maelstrom.Message) error {
+		resp, err := state.ApplyTopology(msg)
 		if err != nil {
 			log.Fatal(err)
 		}
