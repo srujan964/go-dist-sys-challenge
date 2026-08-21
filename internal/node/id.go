@@ -1,4 +1,4 @@
-package handler
+package node
 
 import (
 	"encoding/json"
@@ -22,16 +22,6 @@ type IdGenerateReply struct {
 	Id        string `json:"id"`
 }
 
-type Generator struct {
-	seq uint64
-}
-
-func NewGenerator() *Generator {
-	return &Generator{
-		seq: 0,
-	}
-}
-
 const (
 	nodeBits     = 6
 	sequenceBits = 16
@@ -40,17 +30,17 @@ const (
 )
 
 // Generate a node based growing ID
-func (g *Generator) Generate(msg maelstrom.Message) (IdGenerateReply, error) {
+func (n *Node) GenerateId(msg maelstrom.Message) error {
 	var body IdGenerateMsg
 	if err := json.Unmarshal(msg.Body, &body); err != nil {
 		log.Fatalf("Unable to decode message body - %v", err)
-		return IdGenerateReply{}, err
+		return err
 	}
 
-	id, err := g.nextId(msg.Dest)
+	id, err := n.nextId(msg.Dest)
 	if err != nil {
 		log.Fatalf("Error generating id - %v", err)
-		return IdGenerateReply{}, err
+		return err
 	}
 
 	reply := IdGenerateReply{
@@ -59,7 +49,7 @@ func (g *Generator) Generate(msg maelstrom.Message) (IdGenerateReply, error) {
 		Id:        id,
 	}
 
-	return reply, nil
+	return n.maelstromNode.Reply(msg, reply)
 }
 
 // Generate a 64 bit snowflake-esque id based on the current timestamp, node id,
@@ -68,8 +58,8 @@ func (g *Generator) Generate(msg maelstrom.Message) (IdGenerateReply, error) {
 // 41 bits for timestamp -- milliseconds since epoch
 // 6 bit node ID -- assumes no more than 64 nodes
 // 16 bit node local sequence -- assumes no more than 65536 requests to a node per millisecond
-func (g *Generator) nextId(node string) (string, error) {
-	g.seq++
+func (n *Node) nextId(node string) (string, error) {
+	n.seq++
 
 	var id uint64
 	parsedNodeId, err := strconv.Atoi(strings.TrimPrefix(node, "n"))
@@ -83,7 +73,7 @@ func (g *Generator) nextId(node string) (string, error) {
 
 	id = (tmstmp << (nodeBits + sequenceBits)) |
 		(nodeId << (sequenceBits)) |
-		(g.seq & sequenceMask)
+		(n.seq & sequenceMask)
 
 	guid := fmt.Sprintf("%X", id)
 	return guid, nil

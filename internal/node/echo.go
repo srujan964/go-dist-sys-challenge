@@ -1,4 +1,4 @@
-package handler
+package node
 
 import (
 	"encoding/json"
@@ -19,11 +19,11 @@ type EchoReply struct {
 	Echo      string `json:"echo"`
 }
 
-func HandleEcho(msg maelstrom.Message) (EchoReply, error) {
+func (n *Node) Echo(msg maelstrom.Message) error {
 	var body EchoMsg
 	if err := json.Unmarshal(msg.Body, &body); err != nil {
 		log.Fatalf("Unable to decode message body - %v", err)
-		return EchoReply{}, err
+		return err
 	}
 
 	reply := EchoReply{
@@ -33,5 +33,5 @@ func HandleEcho(msg maelstrom.Message) (EchoReply, error) {
 		Echo:      body.Echo,
 	}
 
-	return reply, nil
+	return n.maelstromNode.Reply(msg, reply)
 }

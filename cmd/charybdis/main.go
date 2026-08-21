@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/srujan964/go-dist-sys-challenge/internal/handler"
+	"github.com/srujan964/go-dist-sys-challenge/internal/node"
 	"log"
 
 	maelstrom "github.com/jepsen-io/maelstrom/demo/go"
@@ -20,54 +20,13 @@ import (
 
 func main() {
 	n := maelstrom.NewNode()
-	idGenerator := handler.NewGenerator()
+	node := node.CreateNode(n)
 
-	state := handler.NewState()
-
-	n.Handle("echo", func(msg maelstrom.Message) error {
-		resp, err := handler.HandleEcho(msg)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		return n.Reply(msg, resp)
-	})
-
-	n.Handle("generate", func(msg maelstrom.Message) error {
-		resp, err := idGenerator.Generate(msg)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		return n.Reply(msg, resp)
-	})
-
-	n.Handle("broadcast", func(msg maelstrom.Message) error {
-		resp, err := state.Broadcast(msg, n)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		return n.Reply(msg, resp)
-	})
-
-	n.Handle("read", func(msg maelstrom.Message) error {
-		resp, err := state.CurrentMessages()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		return n.Reply(msg, resp)
-	})
-
-	n.Handle("topology", func(msg maelstrom.Message) error {
-		resp, err := state.ApplyTopology(msg)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		return n.Reply(msg, resp)
-	})
+	n.Handle("echo", node.Echo)
+	n.Handle("generate", node.GenerateId)
+	n.Handle("broadcast", node.Broadcast)
+	n.Handle("read", node.Read)
+	n.Handle("topology", node.ApplyTopology)
 
 	if err := n.Run(); err != nil {
 		log.Fatal(err)
