@@ -43,7 +43,7 @@ func main() {
 	})
 
 	n.Handle("broadcast", func(msg maelstrom.Message) error {
-		resp, err := state.Store(msg, n)
+		resp, err := state.Broadcast(msg, n)
 		if err != nil {
 			log.Fatal(err)
 		}
