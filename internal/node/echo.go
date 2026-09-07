@@ -25,13 +25,11 @@ func (n *Node) Echo(msg maelstrom.Message) error {
 		log.Fatalf("Unable to decode message body - %v", err)
 		return err
 	}
-
 	reply := EchoReply{
 		Type:      "echo_ok",
 		MsgId:     1,
 		InReplyTo: body.MsgId,
 		Echo:      body.Echo,
 	}
-
 	return n.maelstromNode.Reply(msg, reply)
 }

@@ -1,8 +1,10 @@
 package main
 
 import (
-	"github.com/srujan964/go-dist-sys-challenge/internal/node"
 	"log"
+	"time"
+
+	"github.com/srujan964/go-dist-sys-challenge/internal/node"
 
 	maelstrom "github.com/jepsen-io/maelstrom/demo/go"
 )
@@ -27,8 +29,15 @@ func main() {
 	n.Handle("broadcast", node.Broadcast)
 	n.Handle("read", node.Read)
 	n.Handle("topology", node.ApplyTopology)
+	n.Handle("gossip", node.ReplyToGossip)
+	n.Handle("gossip_ok", node.HandleGossipAck)
+	n.Handle("broadcast_ok", node.BroadcastAck)
+
+	node.Gossip(time.Duration(1000 * time.Millisecond))
 
 	if err := n.Run(); err != nil {
 		log.Fatal(err)
 	}
+
+	node.Shutdown()
 }

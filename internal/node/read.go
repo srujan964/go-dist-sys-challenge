@@ -20,6 +20,6 @@ func (n *Node) Read(msg maelstrom.Message) error {
 
 	return n.maelstromNode.Reply(msg, RPCReply{
 		Type:     "read_ok",
-		Messages: n.messages.ReadAll(),
+		Messages: n.messages.Elements(),
 	})
 }

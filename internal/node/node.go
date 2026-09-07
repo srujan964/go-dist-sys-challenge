@@ -1,6 +1,7 @@
 package node
 
 import (
+	"fmt"
 	"sync"
 
 	maelstrom "github.com/jepsen-io/maelstrom/demo/go"
@@ -12,45 +13,14 @@ type Node struct {
 	neighbours    []string
 	maelstromNode *maelstrom.Node
 	seq           uint64
+
+	mu   sync.RWMutex
+	wg   sync.WaitGroup
+	done chan bool
 }
 
-type Set struct {
-	mu       *sync.RWMutex
-	elements map[int64]struct{}
-}
-
-func (s *Set) Contains(element int64) bool {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	_, exists := s.elements[element]
-	return exists
-}
-
-func (s *Set) Add(element int64) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	_, exists := s.elements[element]
-	if !exists {
-		s.elements[element] = struct{}{}
-	}
-	return nil
-}
-
-func (s *Set) ReadAll() []int64 {
-	ret := make([]int64, 0, len(s.elements))
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	for e := range s.elements {
-		ret = append(ret, e)
-	}
-	return ret
-}
-
-func NewSet() *Set {
-	return &Set{
-		mu:       &sync.RWMutex{},
-		elements: map[int64]struct{}{},
-	}
+func Key(msgType string, msgId int64, dest string) string {
+	return fmt.Sprintf("%s-%d-%s", msgType, msgId, dest)
 }
 
 func CreateNode(n *maelstrom.Node) *Node {
@@ -58,6 +28,7 @@ func CreateNode(n *maelstrom.Node) *Node {
 		id:            n.ID(),
 		maelstromNode: n,
 		messages:      NewSet(),
+		done:          make(chan bool),
 	}
 }
 
@@ -67,4 +38,8 @@ func (n *Node) setID() {
 
 func (n *Node) setNeighbours(nodes []string) {
 	n.neighbours = nodes
+}
+
+func (n *Node) Shutdown() {
+	n.done <- true
 }
