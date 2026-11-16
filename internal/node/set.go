@@ -22,8 +22,8 @@ func (s *Set) Intersect(other *Set) *Set {
 	}
 
 	for it := range smaller.elements {
-		if bigger.Contains(it) {
-			new.Add(it)
+		if _, exists := bigger.elements[it]; exists {
+			new.elements[it] = struct{}{}
 		}
 	}
 	return new
@@ -37,8 +37,9 @@ func (s *Set) Difference(other *Set) *Set {
 	}
 
 	for it := range s.elements {
-		if !other.Contains(it) {
-			new.Add(it)
+		_, exists := other.elements[it]
+		if !exists {
+			new.elements[it] = struct{}{}
 		}
 	}
 	return new
@@ -61,9 +62,7 @@ func (s *Set) Contains(element int64) bool {
 }
 
 func (s *Set) Add(element int64) error {
-	if !s.Contains(element) {
-		s.elements[element] = struct{}{}
-	}
+	s.elements[element] = struct{}{}
 	return nil
 }
 
@@ -82,10 +81,11 @@ func (s *Set) Elements() []int64 {
 func (s *Set) AddAll(other *Set) bool {
 	updated := false
 	for it := range other.elements {
-		if s.Contains(it) {
+		_, exists := s.elements[it]
+		if exists {
 			continue
 		}
-		s.Add(it)
+		s.elements[it] = struct{}{}
 		updated = true
 	}
 	return updated
@@ -96,7 +96,7 @@ func SetFrom(elements []int64) *Set {
 		elements: make(map[int64]struct{}, len(elements)),
 	}
 	for _, it := range elements {
-		new.Add(it)
+		new.elements[it] = struct{}{}
 	}
 	return new
 }

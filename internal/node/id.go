@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"strconv"
-	"strings"
 	"time"
 
 	maelstrom "github.com/jepsen-io/maelstrom/demo/go"
@@ -62,7 +60,7 @@ func (n *Node) nextId(node string) (string, error) {
 	n.seq++
 
 	var id uint64
-	parsedNodeId, err := strconv.Atoi(strings.TrimPrefix(node, "n"))
+	parsedNodeId, err := NumericalID(n.id)
 	if err != nil {
 		log.Printf("Cannot convert node id to int - %v", err)
 		return "", err

@@ -23,31 +23,28 @@ func (n *Node) ReplyToGossip(msg maelstrom.Message) error {
 	if err := json.Unmarshal(msg.Body, &body); err != nil {
 		return fmt.Errorf("Unable to decode Gossip message - %w", err)
 	}
-	received := SetFrom(body.Has)
-	n.mu.RLock()
-	unseen := received.Difference(n.messages)
-	n.mu.RUnlock()
 
-	if unseen.Size() > 0 {
-		n.mu.Lock()
-		for _, msg := range unseen.Elements() {
-			n.messages.Add(msg)
+	n.mu.Lock()
+	hasSet := make(map[int64]struct{}, len(body.Has))
+	for _, it := range body.Has {
+		hasSet[it] = struct{}{}
+		if _, exists := n.messages.elements[it]; !exists {
+			n.messages.Add(it)
 		}
-		n.mu.Unlock()
 	}
-
-	n.mu.RLock()
-	delta := n.messages.Difference(received)
-	n.mu.RUnlock()
+	delta := make([]int64, 0)
+	for it := range n.messages.elements {
+		if _, exists := hasSet[it]; !exists {
+			delta = append(delta, it)
+		}
+	}
+	n.mu.Unlock()
 
 	outgoing := GossipMsg{
 		Type: "gossip_ok",
-		Has:  delta.Elements(),
+		Has:  delta,
 	}
-
-	n.maelstromNode.Send(msg.Src, outgoing)
-
-	return nil
+	return n.maelstromNode.Send(msg.Src, outgoing)
 }
 
 func (n *Node) HandleGossipAck(msg maelstrom.Message) error {
@@ -55,18 +52,14 @@ func (n *Node) HandleGossipAck(msg maelstrom.Message) error {
 	if err := json.Unmarshal(msg.Body, &body); err != nil {
 		return fmt.Errorf("Unable to decode Gossip message - %w", err)
 	}
-	received := SetFrom(body.Has)
-	n.mu.RLock()
-	unseen := received.Difference(n.messages)
-	n.mu.RUnlock()
 
-	if unseen.Size() > 0 {
-		n.mu.Lock()
-		for _, msg := range unseen.Elements() {
-			n.messages.Add(msg)
+	n.mu.Lock()
+	for _, it := range body.Has {
+		if _, exists := n.messages.elements[it]; !exists {
+			n.messages.elements[it] = struct{}{}
 		}
-		n.mu.Unlock()
 	}
+	n.mu.Unlock()
 	return nil
 }
 

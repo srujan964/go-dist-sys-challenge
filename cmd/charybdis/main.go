@@ -33,7 +33,7 @@ func main() {
 	n.Handle("gossip_ok", node.HandleGossipAck)
 	n.Handle("broadcast_ok", node.BroadcastAck)
 
-	node.Gossip(time.Duration(1000 * time.Millisecond))
+	node.Gossip(time.Duration(250 * time.Millisecond))
 
 	if err := n.Run(); err != nil {
 		log.Fatal(err)

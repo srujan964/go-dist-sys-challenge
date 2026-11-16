@@ -27,24 +27,27 @@ func extractMessage(msg maelstrom.Message) (int64, error) {
 	return body.Message, nil
 }
 
-// Partition tolerance: assume a message does not reach a node.
-//
-// We can attach a handler for every message sent to a neighbouring node,
-// that deletes the configured retry for this message to the destination node.
 func (n *Node) Broadcast(msg maelstrom.Message) error {
 	value, err := extractMessage(msg)
 	if err != nil {
 		return err
 	}
 	n.mu.Lock()
-	defer n.mu.Unlock()
 	if n.messages.Contains(value) {
+		n.mu.Unlock()
 		return n.maelstromNode.Reply(msg, RPCReply{
 			Type: "broadcast_ok",
 		})
 	}
-
 	n.messages.Add(value)
+	n.mu.Unlock()
+
+	err = n.maelstromNode.Reply(msg, RPCReply{
+		Type: "broadcast_ok",
+	})
+	if err != nil {
+		return err
+	}
 
 	for _, d := range n.neighbours {
 		if d == msg.Src {
@@ -59,9 +62,7 @@ func (n *Node) Broadcast(msg maelstrom.Message) error {
 			log.Fatalf("Failed to broadcast to neighbour - %v", err)
 		}
 	}
-	return n.maelstromNode.Reply(msg, RPCReply{
-		Type: "broadcast_ok",
-	})
+	return nil
 }
 
 func (n *Node) BroadcastAck(msg maelstrom.Message) error {
