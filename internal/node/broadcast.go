@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 
 	maelstrom "github.com/jepsen-io/maelstrom/demo/go"
 )
@@ -25,6 +26,14 @@ func extractMessage(msg maelstrom.Message) (int64, error) {
 		return 0, fmt.Errorf("Unable to decode Broadcast message body - %w", err)
 	}
 	return body.Message, nil
+}
+
+func RandomNeighbours(neighbours []string) []string {
+	rand.Shuffle(len(neighbours), func(i, j int) {
+		neighbours[i], neighbours[j] = neighbours[j], neighbours[i]
+	})
+	m := len(neighbours)/2 + 1
+	return neighbours[:m]
 }
 
 func (n *Node) Broadcast(msg maelstrom.Message) error {
@@ -49,7 +58,7 @@ func (n *Node) Broadcast(msg maelstrom.Message) error {
 		return err
 	}
 
-	for _, d := range n.neighbours {
+	for _, d := range RandomNeighbours(n.neighbours) {
 		if d == msg.Src {
 			continue
 		}

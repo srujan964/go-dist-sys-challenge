@@ -12,7 +12,7 @@ type RPCToplogyMsg struct {
 func (n *Node) ApplyTopology(msg maelstrom.Message) error {
 	n.setID()
 
-	n.InitTopology(6)
+	n.InitTopology(5)
 
 	return n.maelstromNode.Reply(msg, RPCReply{
 		Type: "topology_ok",
