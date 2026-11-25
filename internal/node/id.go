@@ -35,7 +35,7 @@ func (n *Node) GenerateId(msg maelstrom.Message) error {
 		return err
 	}
 
-	id, err := n.nextId(msg.Dest)
+	id, err := n.nextId()
 	if err != nil {
 		log.Fatalf("Error generating id - %v", err)
 		return err
@@ -56,13 +56,14 @@ func (n *Node) GenerateId(msg maelstrom.Message) error {
 // 41 bits for timestamp -- milliseconds since epoch
 // 6 bit node ID -- assumes no more than 64 nodes
 // 16 bit node local sequence -- assumes no more than 65536 requests to a node per millisecond
-func (n *Node) nextId(node string) (string, error) {
+func (n *Node) nextId() (string, error) {
+	n.setID()
 	n.seq++
 
 	var id uint64
 	parsedNodeId, err := NumericalID(n.id)
 	if err != nil {
-		log.Printf("Cannot convert node id to int - %v", err)
+		log.Printf("Cannot convert node id %s to int - %v", n.id, err)
 		return "", err
 	}
 

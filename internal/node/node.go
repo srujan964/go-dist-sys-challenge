@@ -2,6 +2,7 @@ package node
 
 import (
 	"log"
+	"math/rand"
 	"sort"
 	"strconv"
 	"strings"
@@ -74,4 +75,12 @@ func NumericalID(nodeId string) (int, error) {
 		return 0, err
 	}
 	return int(parsedNodeId), nil
+}
+
+func RandomNeighbours(neighbours []string) []string {
+	rand.Shuffle(len(neighbours), func(i, j int) {
+		neighbours[i], neighbours[j] = neighbours[j], neighbours[i]
+	})
+	m := len(neighbours)/2 + 1
+	return neighbours[:m]
 }
