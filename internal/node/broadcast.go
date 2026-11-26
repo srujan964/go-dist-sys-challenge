@@ -13,7 +13,7 @@ type BroadcastMsg struct {
 	Message int64  `json:"message"`
 }
 
-type RPCReply struct {
+type BroadcastRPCReply struct {
 	Type      string  `json:"type"`
 	InReplyTo int64   `json:"in_reply_to,omitempty"`
 	Messages  []int64 `json:"messages,omitempty"`
@@ -35,14 +35,14 @@ func (n *Node) Broadcast(msg maelstrom.Message) error {
 	n.mu.Lock()
 	if n.messages.Contains(value) {
 		n.mu.Unlock()
-		return n.maelstromNode.Reply(msg, RPCReply{
+		return n.maelstromNode.Reply(msg, BroadcastRPCReply{
 			Type: "broadcast_ok",
 		})
 	}
 	n.messages.Add(value)
 	n.mu.Unlock()
 
-	err = n.maelstromNode.Reply(msg, RPCReply{
+	err = n.maelstromNode.Reply(msg, BroadcastRPCReply{
 		Type: "broadcast_ok",
 	})
 	if err != nil {

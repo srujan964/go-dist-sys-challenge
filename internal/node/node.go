@@ -16,17 +16,21 @@ type Node struct {
 	messages      *Set
 	neighbours    []string
 	maelstromNode *maelstrom.Node
+	kv            *maelstrom.KV
 	seq           uint64
 
-	mu   sync.RWMutex
-	done chan bool
+	mu     sync.RWMutex
+	latest int
+	done   chan bool
 }
 
-func CreateNode(n *maelstrom.Node) *Node {
+func CreateNode(n *maelstrom.Node, kv *maelstrom.KV) *Node {
 	return &Node{
 		id:            n.ID(),
 		maelstromNode: n,
+		kv:            kv,
 		messages:      NewSet(),
+		latest:        0,
 		done:          make(chan bool),
 	}
 }

@@ -22,7 +22,9 @@ import (
 
 func main() {
 	n := maelstrom.NewNode()
-	node := node.CreateNode(n)
+	kv := maelstrom.NewSeqKV(n)
+
+	node := node.CreateNode(n, kv)
 
 	n.Handle("echo", node.Echo)
 	n.Handle("generate", node.GenerateId)

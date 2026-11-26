@@ -14,7 +14,7 @@ func (n *Node) ApplyTopology(msg maelstrom.Message) error {
 
 	n.InitTopology(5)
 
-	return n.maelstromNode.Reply(msg, RPCReply{
+	return n.maelstromNode.Reply(msg, BroadcastRPCReply{
 		Type: "topology_ok",
 	})
 }

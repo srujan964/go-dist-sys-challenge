@@ -20,7 +20,7 @@ func (n *Node) Read(msg maelstrom.Message) error {
 
 	n.mu.RLock()
 	defer n.mu.RUnlock()
-	return n.maelstromNode.Reply(msg, RPCReply{
+	return n.maelstromNode.Reply(msg, BroadcastRPCReply{
 		Type:     "read_ok",
 		Messages: n.messages.Elements(),
 	})
