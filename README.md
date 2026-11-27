@@ -24,14 +24,14 @@ Run challenge four with:
 
 ### Notes
 
-1) Globally unique ID
-  Each node generates a Snowflake-like ID that uses the node's ID (numerical part), a local, node-only, increasing sequence, and a microsecond-precision timestamp.
+#### Globally Unique ID
+Each node generates a Snowflake-like ID that uses the node's ID (numerical part), a local, node-only, increasing sequence, and a microsecond-precision timestamp.
 
-2) Broadcast
-  The broadcast solution started out forwarding every incoming message to all other neighbours as defined by the topology provided by Maelstrom.    
+#### Broadcast
+The broadcast solution started out forwarding every incoming message to all other neighbours as defined by the topology provided by Maelstrom.    
 
-    To tolerate network partitions, each node also gossips its current state of messages to its neighbours in an interval.
-    Node 'A' gossips its entire message state to node 'B', and node 'B' replies with all the messages it has that 'A' hasn't seen yet.
+To tolerate network partitions, each node also gossips its current state of messages to its neighbours in an interval.
+Node 'A' gossips its entire message state to node 'B', and node 'B' replies with all the messages it has that 'A' hasn't seen yet.
 
-    The final solution for this challenge, requiring efficient broadcasting, moved to a custom cluster topology and randomized broadcasts to a majority of neighbours.
+The final solution for this challenge, requiring efficient broadcasting, moved to a custom cluster topology and randomized broadcasts to a majority of neighbours.
     
